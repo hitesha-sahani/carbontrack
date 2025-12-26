@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Pie } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 type CarbonData = {
   electricity: number;
@@ -33,25 +37,38 @@ export default function Dashboard() {
     );
   }
 
-  const pieData = [
+  const pieValues = [data.electricity, data.fuel, data.transport];
+
+  const pieLabels = ["Electricity", "Fuel", "Transport"];
+
+  const pieData = {
+    labels: pieLabels,
+    datasets: [
+      {
+        data: pieValues,
+        backgroundColor: ["#16a34a", "#22c55e", "#86efac"],
+        borderWidth: 0,
+      },
+    ],
+  };
+
+  const sortedSources = [
     { name: "Electricity", value: data.electricity },
     { name: "Fuel", value: data.fuel },
     { name: "Transport", value: data.transport },
-  ];
+  ].sort((a, b) => b.value - a.value);
 
-  const sorted = [...pieData].sort((a, b) => b.value - a.value);
-
-  const topSource = sorted[0].name;
+  const topSource = sortedSources[0].name;
 
   const recommendations: Record<string, string[]> = {
     Electricity: [
       "Switch to energy-efficient appliances",
-      "Adopt renewable electricity where possible",
-      "Reduce peak-hour energy usage",
+      "Adopt renewable electricity sources",
+      "Reduce peak-hour power usage",
     ],
     Fuel: [
       "Optimize fuel consumption",
-      "Reduce unnecessary travel",
+      "Reduce unnecessary vehicle use",
       "Switch to cleaner fuel alternatives",
     ],
     Transport: [
@@ -75,25 +92,12 @@ export default function Dashboard() {
         </div>
 
         {/* BREAKDOWN */}
-        <div className="bg-white p-4 rounded-xl shadow h-[260px]">
-          <p className="mb-2 font-semibold">Emission Breakdown</p>
+        <div className="bg-white p-4 rounded-xl shadow">
+          <p className="mb-4 font-semibold">Emission Breakdown</p>
 
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-              >
-                {pieData.map((_, i) => (
-                  <Cell key={i} fill={["#16a34a", "#22c55e", "#86efac"][i]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="max-w-[260px] mx-auto">
+            <Pie data={pieData} />
+          </div>
         </div>
 
         {/* HIGH IMPACT AREAS */}
